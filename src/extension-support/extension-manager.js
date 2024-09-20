@@ -12,10 +12,6 @@ const BlockType = require('./block-type');
 // Local resources server address
 const localResourcesServerUrl = 'http://127.0.0.1:20112/';
 
-// These extensions are currently built into the VM repository but should not be loaded at startup.
-// TODO: move these out into a separate repository?
-// TODO: change extension spec so that library info, including extension ID, can be collected through static methods
-
 const builtinExtensions = {
     // This is an example that isn't loaded with the other core blocks,
     // but serves as a reference for loading core blocks as extensions.
@@ -35,31 +31,10 @@ const builtinDevices = {
     arduinoNano: () => require('../devices/arduinoUno/arduinoNano'),
     arduinoUnoUltra: () => require('../devices/arduinoUno/arduinoUnoUltra'),
     arduinoUnoSE: () => require('../devices/arduinoUno/arduinoUnoSE'),
-    // Arduino Leonardo
-    arduinoLeonardo: () => require('../devices/arduinoLeonardo/arduinoLeonardo'),
-    makeyMakey: () => require('../devices/arduinoLeonardo/makeyMakey'),
-    // Arduino Mega2560
-    arduinoMega2560: () => require('../devices/arduinoMega2560/arduinoMega2560'),
     // Esp32
     arduinoEsp32: () => require('../devices/arduinoEsp32/arduinoEsp32'),
-    // Esp8266
-    arduinoEsp8266: () => require('../devices/arduinoEsp8266/arduinoEsp8266'),
-    arduinoEsp8266NodeMCU: () => require('../devices/arduinoEsp8266/arduinoEsp8266NodeMCU'),
-    // K210
-    arduinoK210: () => require('../devices/arduinoK210/arduinoK210'),
-    arduinoK210MaixDock: () => require('../devices/arduinoK210/arduinoK210MaixDock'),
-    arduinoK210Maixduino: () => require('../devices/arduinoK210/arduinoK210Maixduino'),
-    // Raspberry Pi Pico
-    arduinoRaspberryPiPico: () => require('../devices/arduinoRaspberryPiPico/arduinoRaspberryPiPico'),
-    // Microbit
-    microbit: () => require('../devices/microbit/microbit'),
-    microbitV2: () => require('../devices/microbit/microbitV2')
-
-    // TODO: transform these to device extension.
-    // wedo2: () => require('../extensions/scratch3_wedo2'),
-    // ev3: () => require('../extensions/scratch3_ev3'),
-    // boost: () => require('../extensions/scratch3_boost'),
-    // gdxfor: () => require('../extensions/scratch3_gdx_for')
+    // Esp32C3
+    arduinoEsp32C3: () => require('../devices/arduinoEsp32C3/arduinoEsp32C3')
 };
 
 /**
@@ -142,11 +117,6 @@ class ExtensionManager {
          */
         this._deviceExtensionsList = [];
 
-        /**
-         * Keep a reference to the runtime so we can construct internal extension objects.
-         * TODO: remove this in favor of extensions accessing the runtime as a service.
-         * @type {Runtime}
-         */
         this.runtime = runtime;
 
         dispatch.setService('extensions', this).catch(e => {
@@ -207,7 +177,6 @@ class ExtensionManager {
             return;
         }
 
-        /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
         if (this.isExtensionLoaded(extensionId)) {
             const message = `Rejecting attempt to load a second extension with ID ${extensionId}`;
             log.warn(message);
@@ -228,7 +197,6 @@ class ExtensionManager {
      */
     loadExtensionURL (extensionURL) {
         if (builtinExtensions.hasOwnProperty(extensionURL)) {
-            /** @TODO dupe handling for non-builtin extensions. See commit 670e51d33580e8a2e852b3b038bb3afc282f81b9 */
             if (this.isExtensionLoaded(extensionURL)) {
                 const message = `Rejecting attempt to load a second extension with ID ${extensionURL}`;
                 log.warn(message);
@@ -639,15 +607,6 @@ class ExtensionManager {
         return text.toString().replace(/[<"&]/, '_');
     }
 
-    /**
-     * Apply minor cleanup and defaults for optional extension fields.
-     * TODO: make the ID unique in cases where two copies of the same extension are loaded.
-     * @param {string} serviceName - the name of the service hosting this extension block
-     * @param {ExtensionInfo} extensionInfo - the extension info to be sanitized
-     * @param {object} id - the id of oringal extensions or device.
-     * @returns {ExtensionInfo} - a new extension info object with cleaned-up values
-     * @private
-     */
     _prepareExtensionInfo (serviceName, extensionInfo, id) {
         extensionInfo = Object.assign([], extensionInfo);
         extensionInfo.map(category => {
@@ -673,7 +632,6 @@ class ExtensionManager {
                     }
                     results.push(result);
                 } catch (e) {
-                    // TODO: more meaningful error reporting
                     log.error(`Error processing block: ${e.message}, Block:\n${JSON.stringify(blockInfo)}`);
                 }
                 return results;
@@ -732,7 +690,6 @@ class ExtensionManager {
         const editingTargetID = editingTarget ? editingTarget.id : null;
         const extensionMessageContext = this.runtime.makeMessageContextForTarget(editingTarget);
 
-        // TODO: Fix this to use dispatch.call when extensions are running in workers.
         const menuFunc = extensionObject[menuItemFunctionName];
         const menuItems = menuFunc.call(extensionObject, editingTargetID).map(
             item => {
@@ -813,7 +770,6 @@ class ExtensionManager {
 
             blockInfo.func = (args, util) => {
                 const realBlockInfo = getBlockInfo(args);
-                // TODO: filter args using the keys of realBlockInfo.arguments? maybe only if sandboxed?
                 return callBlockFunc(args, util, realBlockInfo);
             };
             break;
