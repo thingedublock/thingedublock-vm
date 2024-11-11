@@ -1,7 +1,11 @@
-# openblock-vm
-[![Publish Npm Package](https://github.com/openblockcc/openblock-vm/actions/workflows/publish-npm-package.yml/badge.svg)](https://github.com/openblockcc/openblock-vm/actions/workflows/publish-npm-package.yml) ![](https://img.shields.io/github/license/openblockcc/openblock-vm)
+# thingedublock-vm
 
-## Getting Start
+## Description
 
-Visit the wiki: openblockcc.github.io
+This repository contains the code for custom devices configuration for ThingEdu Hardware.
 
+## Version
+
+| Version | Description |
+| ------- | ----------- |
+| 1.0.0   | Initial version |
